@@ -47,19 +47,28 @@ const addrT = (topic) => '0x' + topic.slice(26)
 const addrW = (w) => '0x' + w.slice(24)
 const num = (w) => BigInt('0x' + w).toString()
 
-async function logsFor(address, topic0) {
-  // 全量一把抓；量大再分片 —— 目前全站事件几百条级别
-  return rpc('eth_getLogs', [{ address, topics: [topic0], fromBlock: '0x' + FROM_BLOCK.toString(16), toBlock: 'latest' }])
+// RH 公共 RPC 一次 getLogs 最多 1000 万个区块（-32602 "only 10000000 are allowed"）。
+// 09-28 链头越过 FROM_BLOCK + 1000 万之后，全量一把抓每轮都被拒 —— 按 900 万一段切。
+const LOG_CHUNK = 9_000_000
+
+async function logsFor(address, topic0, head) {
+  const out = []
+  for (let a = FROM_BLOCK; a <= head; a += LOG_CHUNK) {
+    const b = Math.min(a + LOG_CHUNK - 1, head)
+    out.push(...await rpc('eth_getLogs', [{ address, topics: [topic0], fromBlock: '0x' + a.toString(16), toBlock: '0x' + b.toString(16) }]))
+  }
+  return out
 }
 
 async function main() {
-  const [claimsA, claimsB, launchFees, ops, burns] = await Promise.all([
-    logsFor(PORTAL, TOPIC.feesClaimed),
-    logsFor(LP_LOCK, TOPIC.feesClaimed),
-    logsFor(PORTAL, TOPIC.launchFee),
-    logsFor(FEE_TREASURY, TOPIC.opsSpend),
-    logsFor(FEE_TREASURY, TOPIC.buyback),
-  ])
+  const head = parseInt(await rpc('eth_blockNumber', []), 16)
+  // 5 个事件源也顺序扫：分段后一个源 7 段左右，5 路并发本地实测几秒内就 429；
+  // 顺序扫 35 段十几秒，离 job 的 5 分钟上限很远
+  const claimsA = await logsFor(PORTAL, TOPIC.feesClaimed, head)
+  const claimsB = await logsFor(LP_LOCK, TOPIC.feesClaimed, head)
+  const launchFees = await logsFor(PORTAL, TOPIC.launchFee, head)
+  const ops = await logsFor(FEE_TREASURY, TOPIC.opsSpend, head)
+  const burns = await logsFor(FEE_TREASURY, TOPIC.buyback, head)
 
   const events = []
   for (const l of [...claimsA, ...claimsB]) {
