@@ -1,9 +1,9 @@
 {
  "name": "dontblink",
- "timestamp": "2026-09-28T13:18:56.907Z",
+ "timestamp": "2026-10-21T03:50:40.034Z",
  "version": {
   "major": 1,
-  "minor": 24,
+  "minor": 25,
   "patch": 0
  },
  "keywords": [
@@ -14,6 +14,46 @@
  ],
  "logoURI": "https://dontblink.community/favicon.png",
  "tokens": [
+  {
+   "chainId": 4663,
+   "address": "0x430fcFF9f9BF796840D9be5cFcEea83B57dBdBdb",
+   "name": "Stare Funds",
+   "symbol": "STARE",
+   "decimals": 18,
+   "logoURI": "https://dontblink.community/logos/0x430fcff9f9bf796840d9be5cfceea83b57dbdbdb.jpg"
+  },
+  {
+   "chainId": 4663,
+   "address": "0x31b25f24Cb9182969a7BD4825993d40647d3dBDb",
+   "name": "Sync",
+   "symbol": "SYNC",
+   "decimals": 18,
+   "logoURI": "https://dontblink.community/logos/0x31b25f24cb9182969a7bd4825993d40647d3dbdb.jpg"
+  },
+  {
+   "chainId": 4663,
+   "address": "0x937a98c673635993887a2aA101642aDB8EdBDBdb",
+   "name": "超级蝌蚪",
+   "symbol": "TADPOLE",
+   "decimals": 18,
+   "logoURI": "https://dontblink.community/logos/0x937a98c673635993887a2aa101642adb8edbdbdb.jpg"
+  },
+  {
+   "chainId": 4663,
+   "address": "0xc8b4bA52cB1B2425338cc509a2a95582DddbdBDb",
+   "name": "Lotterypad",
+   "symbol": "LP",
+   "decimals": 18,
+   "logoURI": "https://dontblink.community/logos/0xc8b4ba52cb1b2425338cc509a2a95582dddbdbdb.jpg"
+  },
+  {
+   "chainId": 4663,
+   "address": "0x54457e45a70260D6042Ffc27FD06918103dBDBDb",
+   "name": "HeadPhoneKitten",
+   "symbol": "HPK",
+   "decimals": 18,
+   "logoURI": "https://dontblink.community/logos/0x54457e45a70260d6042ffc27fd06918103dbdbdb.jpg"
+  },
   {
    "chainId": 4663,
    "address": "0xe9464c5e9CE16DAbB8dfb6581C89fd0f72DbDbdb",
