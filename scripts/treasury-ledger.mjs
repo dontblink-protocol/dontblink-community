@@ -27,17 +27,35 @@ const TOPIC = {
   buyback:     '0x96ae7f4e9a7580f1933fb51c2ab25547c2a489c6a5990e1783b0d861fdfbd5aa',
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+// 429 / 5xx 退避重试：Actions runner 的 IP 是共用的，比本地更容易被限
+// （#2 合并后线上首轮就在第二个源 429）。有 Retry-After 就按它等。
+const BACKOFF = [2_000, 4_000, 8_000, 16_000, 30_000]
+
+// Retry-After 可能是秒数也可能是 HTTP 日期；封顶 60s，别把 job 的 5 分钟等没了
+function retryAfterMs(h) {
+  if (!h) return null
+  const ms = /^\d+$/.test(h.trim()) ? Number(h) * 1000 : Date.parse(h) - Date.now()
+  return Number.isFinite(ms) && ms >= 0 ? Math.min(ms, 60_000) : null
+}
+
 let idSeq = 1
 async function rpc(method, params) {
-  const r = await fetch(RPC, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: idSeq++, method, params }),
-  })
-  if (!r.ok) throw new Error(`${method} http ${r.status}`)
-  const j = await r.json()
-  if (j.error) throw new Error(`${method}: ${JSON.stringify(j.error)}`)
-  return j.result
+  const body = JSON.stringify({ jsonrpc: '2.0', id: idSeq++, method, params })
+  for (let attempt = 0; ; attempt++) {
+    const r = await fetch(RPC, { method: 'POST', headers: { 'content-type': 'application/json' }, body })
+    if ((r.status === 429 || r.status >= 500) && attempt < BACKOFF.length) {
+      const wait = retryAfterMs(r.headers.get('retry-after')) ?? BACKOFF[attempt]
+      await r.body?.cancel()
+      console.error(`${method} http ${r.status}, retry ${attempt + 1}/${BACKOFF.length} in ${wait}ms`)
+      await sleep(wait)
+      continue
+    }
+    if (!r.ok) throw new Error(`${method} http ${r.status}`)
+    const j = await r.json()
+    if (j.error) throw new Error(`${method}: ${JSON.stringify(j.error)}`)
+    return j.result
+  }
 }
 
 const word = (data, i) => data.slice(2 + 64 * i, 2 + 64 * (i + 1))
@@ -56,6 +74,7 @@ async function logsFor(address, topic0, head) {
   for (let a = FROM_BLOCK; a <= head; a += LOG_CHUNK) {
     const b = Math.min(a + LOG_CHUNK - 1, head)
     out.push(...await rpc('eth_getLogs', [{ address, topics: [topic0], fromBlock: '0x' + a.toString(16), toBlock: '0x' + b.toString(16) }]))
+    await sleep(300) // 段与段之间歇一下，少撞限流
   }
   return out
 }
