@@ -1,6 +1,6 @@
 {
- "capturedAt": 1793144726,
- "block": 99633589,
+ "capturedAt": 1793165275,
+ "block": 99832298,
  "launchpad": "0xF441cc979fa862f2674b9188A7b529caFd3ce204",
  "counts": {
   "claimable": 694,
@@ -9,8 +9,8 @@
   "windowOpen": 0,
   "other": 0
  },
- "wethOutstanding": "1141466236369090021",
- "wethClaimable": "1141466236369090021",
+ "wethOutstanding": "1155406366073213116",
+ "wethClaimable": "1155406366073213116",
  "wethBricked": "0",
  "devsWithClaimable": 284,
  "bricked": []
