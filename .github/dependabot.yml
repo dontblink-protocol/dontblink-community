@@ -1,0 +1,13 @@
+# Dependabot：每周查一次 GitHub Actions 的版本更新，最多同时开 3 个 PR。2026-10-19 由仓库所有者要求加上。
+# - 本仓库没有 npm / pip 等依赖清单（scripts/ 直接用 node 跑），所以只管 github-actions。
+# - 它的 PR 会改现有的快照 workflow，合并前要所有者看过（AGENTS.md 第 3 条）。
+# - cooldown 7 天：新版本发布满 7 天才提，和 AGENTS.md 第 5 条一致。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
